@@ -1,6 +1,6 @@
 -module(esendgrid).
 
--export([send_email/1]).
+-export([send_email/1, send_email/3]).
 
 parse_email(String) ->
     {ok, R0} = re:compile(<<"\([^<]+\) <\([^>]+\)>">>),
@@ -11,7 +11,12 @@ parse_email(String) ->
             String
     end.
 
-send_email(Json) when is_binary(Json) ->
+send_email(Payload) ->
+    {ok, ApiUser} = application:get_env(esendgrid, sendgrid_api_user),
+    {ok, ApiKey} = application:get_env(esendgrid, sendgrid_api_key),
+    send_email(Payload, ApiUser, ApiKey).
+
+send_email(Json, ApiUser, ApiKey) when is_binary(Json) ->
     Jterm = jiffy:decode(Json),
     Subject = ej:get({"Subject"}, Jterm),
     Text = ej:get({"TextBody"}, Jterm),
@@ -57,9 +62,9 @@ send_email(Json) when is_binary(Json) ->
             end,
             Params4 ++ [{<<"replyto">>, ReplyToEmail}]
     end,
-    handle_response(send_email(Params5));
+    handle_response(send_email(Params5, ApiUser, ApiKey));
 
-send_email(Params) when is_list(Params) ->
+send_email(Params, ApiUser, ApiKey) when is_list(Params) ->
     {ok, ApiUser} = application:get_env(esendgrid, sendgrid_api_user),
     {ok, ApiKey} = application:get_env(esendgrid, sendgrid_api_key),
 
