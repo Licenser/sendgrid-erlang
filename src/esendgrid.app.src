@@ -5,8 +5,8 @@
   {registered, []},
   {applications, [
                   kernel,
+                  lhttpc,
                   stdlib
                  ]},
-  {mod, { esendgrid_app, []}},
   {env, []}
  ]}.

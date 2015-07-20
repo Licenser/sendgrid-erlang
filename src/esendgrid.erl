@@ -65,9 +65,6 @@ send_email(Json, ApiUser, ApiKey) when is_binary(Json) ->
     handle_response(send_email(Params5, ApiUser, ApiKey));
 
 send_email(Params, ApiUser, ApiKey) when is_list(Params) ->
-    {ok, ApiUser} = application:get_env(esendgrid, sendgrid_api_user),
-    {ok, ApiKey} = application:get_env(esendgrid, sendgrid_api_key),
-
     Auth = [
         {<<"api_user">>, ApiUser},
         {<<"api_key">>, ApiKey}
