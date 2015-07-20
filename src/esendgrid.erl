@@ -1,6 +1,6 @@
 -module(esendgrid).
 
--export([send_email/1, send_email/3]).
+-export([send_email/1, send_email/2]).
 
 parse_email(String) ->
     {ok, R0} = re:compile(<<"\([^<]+\) <\([^>]+\)>">>),
@@ -12,11 +12,10 @@ parse_email(String) ->
     end.
 
 send_email(Payload) ->
-    {ok, ApiUser} = application:get_env(esendgrid, sendgrid_api_user),
     {ok, ApiKey} = application:get_env(esendgrid, sendgrid_api_key),
-    send_email(Payload, ApiUser, ApiKey).
+    send_email(Payload, ApiKey).
 
-send_email(Json, ApiUser, ApiKey) when is_binary(Json) ->
+send_email(Json, ApiKey) when is_binary(Json) ->
     Jterm = jiffy:decode(Json),
     Subject = ej:get({"Subject"}, Jterm),
     Text = ej:get({"TextBody"}, Jterm),
@@ -62,20 +61,17 @@ send_email(Json, ApiUser, ApiKey) when is_binary(Json) ->
             end,
             Params4 ++ [{<<"replyto">>, ReplyToEmail}]
     end,
-    handle_response(send_email(Params5, ApiUser, ApiKey));
+    handle_response(send_email(Params5, ApiKey));
 
-send_email(Params, ApiUser, ApiKey) when is_list(Params) ->
-    Auth = [
-        {<<"api_user">>, ApiUser},
-        {<<"api_key">>, ApiKey}
-    ],
-    Body = form_urlencode(Params ++ Auth),
+send_email(Params, ApiKey) when is_list(Params) ->
+    Body = form_urlencode(Params),
     Res = lhttpc:request(
         "https://sendgrid.com/api/mail.send.json",
         "POST",
         [
-            {<<"Content-Type">>, <<"application/x-www-form-urlencoded">>},
-            {<<"Accept">>, <<"application/json">>}
+         {<<"Authorization">>, <<"Bearer ", (list_to_binary(ApiKey)/binary)>>},
+         {<<"Content-Type">>, <<"application/x-www-form-urlencoded">>},
+         {<<"Accept">>, <<"application/json">>}
         ],
         Body,
         5000
