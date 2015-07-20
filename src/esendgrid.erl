@@ -69,7 +69,7 @@ send_email(Params, ApiKey) when is_list(Params) ->
         "https://sendgrid.com/api/mail.send.json",
         "POST",
         [
-         {<<"Authorization">>, <<"Bearer ", (list_to_binary(ApiKey)/binary)>>},
+         {<<"Authorization">>, <<"Bearer ", (list_to_binary(ApiKey))/binary>>},
          {<<"Content-Type">>, <<"application/x-www-form-urlencoded">>},
          {<<"Accept">>, <<"application/json">>}
         ],
