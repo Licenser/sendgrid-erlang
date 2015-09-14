@@ -63,13 +63,15 @@ send_email(Json, ApiKey) when is_binary(Json) ->
     end,
     handle_response(send_email(Params5, ApiKey));
 
-send_email(Params, ApiKey) when is_list(Params) ->
+send_email(Params, ApiKey) when is_list(Params), is_list(ApiKey) ->
+    send_email(Params, list_to_binary(ApiKey));
+send_email(Params, ApiKey) when is_list(Params), is_binary(ApiKey) ->
     Body = form_urlencode(Params),
     Res = lhttpc:request(
         "https://sendgrid.com/api/mail.send.json",
         "POST",
         [
-         {<<"Authorization">>, <<"Bearer ", (list_to_binary(ApiKey))/binary>>},
+         {<<"Authorization">>, <<"Bearer ", ApiKey/binary>>},
          {<<"Content-Type">>, <<"application/x-www-form-urlencoded">>},
          {<<"Accept">>, <<"application/json">>}
         ],
